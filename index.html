@@ -325,13 +325,113 @@
             document.getElementById("clue-quote").innerText = attempts >= 2 ? currentMovie.quote : "🔒 Indice réplique au 2e essai";
         }
 
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function getAudioContext() {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            return new AudioContext();
+        }
 
         function playThemeSong() {
+            const audioCtx = getAudioContext();
             if (audioCtx.state === 'suspended') { audioCtx.resume(); }
             const notes = currentMovie.notes;
             notes.forEach((freq, index) => {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'triangle';
-                osc.frequency.setValueAtTime(freq, audio
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (index * 0.25));
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime + (index * 0.25));
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (index * 0.25) + 0.2);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime + (index * 0.25));
+                osc.stop(audioCtx.currentTime + (index * 0.25) + 0.2);
+            });
+        }
+        
+        function playSound(type) {
+            const audioCtx = getAudioContext();
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'win') {
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(554.37, audioCtx.currentTime + 0.1);
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        function makeGuess() {
+            const input = document.getElementById("user-guess");
+            const userVal = input.value.trim().toLowerCase();
+            const msgBox = document.getElementById("message-box");
+
+            if (!userVal) return;
+
+            const isCorrect = userVal === currentMovie.title.toLowerCase();
+            
+            const dots = document.querySelectorAll(".guess-dot");
+            dots[attempts].innerText = userVal.substring(0,1).toUpperCase();
+            dots[attempts].classList.add(isCorrect ? "correct" : "wrong");
+
+            attempts++;
+
+            if (isCorrect) {
+                playSound('win');
+                document.getElementById("movie-img").style.filter = "blur(0px)";
+                msgBox.innerHTML = `<span style="color: var(--green);">🎉 Bravo ! C'était bien ${currentMovie.title} !</span><br><br>` +
+                                   `<button class="action-btn" onclick="shareScore()">📤 Partager mon score</button>`;
+                document.getElementById("game-controls").style.display = "none";
+            } else if (attempts >= maxAttempts) {
+                playSound('wrong');
+                document.getElementById("movie-img").style.filter = "blur(0px)";
+                msgBox.innerHTML = `<span style="color: var(--red);">Perdu ! C'était : ${currentMovie.title}</span>`;
+                document.getElementById("game-controls").style.display = "none";
+            } else {
+                playSound('wrong');
+                document.getElementById("movie-img").style.filter = `blur(${blurLevels[attempts]})`;
+                msgBox.innerText = `❌ Ce n'est pas ça ! Encore ${maxAttempts - attempts} essais.`;
+                updateClues();
+                input.value = "";
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === "Enter") makeGuess();
+        }
+
+        function shareScore() {
+            const scoreText = `🎬 CinéQuiz | Trouvé en ${attempts}/5 essais ! 🍿`;
+            navigator.clipboard.writeText(scoreText);
+            alert("Score copié dans le presse-papier ! Tu peux le coller sur WhatsApp ou tes réseaux.");
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
+
+            if (tabName === 'game') {
+                document.querySelectorAll(".tab-btn")[0].classList.add("active");
+                document.getElementById("game-section").classList.add("active");
+            } else {
+                document.querySelectorAll(".tab-btn")[1].classList.add("active");
+                document.getElementById("shop-section").classList.add("active");
+            }
+        }
+    </script>
+</body>
+</html>
