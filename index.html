@@ -120,6 +120,22 @@
             margin-bottom: 6px;
         }
 
+        .music-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+            font-size: 0.85rem;
+        }
+
+        .music-btn:hover {
+            opacity: 0.9;
+        }
+
         .input-group {
             display: flex;
             gap: 10px;
@@ -243,6 +259,7 @@
                 <p><strong>🎭 Indice 1 (Genre) :</strong> <span id="clue-genre">...</span></p>
                 <p><strong>📅 Indice 2 (Année) :</strong> <span id="clue-year">...</span></p>
                 <p><strong>💬 Indice 3 (Réplique culte) :</strong> <span id="clue-quote">...</span></p>
+                <button class="music-btn" onclick="playThemeSong()">🎵 Écouter un extrait musical</button>
             </div>
 
             <div id="game-controls">
@@ -272,134 +289,4 @@
                     <h4>Coffret Blu-ray Collector</h4>
                     <p>Éditions limitées et steelbooks</p>
                 </div>
-                <a href="https://www.amazon.fr/s?k=coffret+bluray+collector" target="_blank" class="aff-btn">Voir</a>
-            </div>
-
-            <div class="shop-item">
-                <div>
-                    <h4>Barre de Son Home-Cinéma</h4>
-                    <p>Pour une immersion totale</p>
-                </div>
-                <a href="https://www.amazon.fr/s?k=barre+de+son+home+cinema" target="_blank" class="aff-btn">Voir</a>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // BASE DE DONNÉES DES FILMS AVEC RÉPLIQUES CULTES
-        const MOVIE_DATABASE = [
-            { title: "Jurassic Park", genre: "Science-Fiction / Aventure", year: "1993", quote: "« La vie, euh... trouve toujours un chemin. »", image: "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=600" },
-            { title: "Inception", genre: "Thriller / Sci-Fi", year: "2010", quote: "« On doit aller plus profond. »", image: "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=600" },
-            { title: "Le Seigneur des Anneaux", genre: "Fantasy / Aventure", year: "2001", quote: "« Un anneau pour les gouverner tous. »", image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=600" },
-            { title: "Interstellar", genre: "Sci-Fi / Drame", year: "2014", quote: "« Nous nous retrouverons peut-être, ou peut-être pas. »", image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600" },
-            { title: "Matrix", genre: "Action / Sci-Fi", year: "1999", quote: "« Tu prends la pilule bleue, l'histoire s'arrête là... »", image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=600" }
-        ];
-
-        // Sélection automatique du film du jour
-        const startDate = new Date("2026-01-01").getTime();
-        const today = new Date().setHours(0,0,0,0);
-        const dayIndex = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-        const currentMovie = MOVIE_DATABASE[dayIndex % MOVIE_DATABASE.length];
-
-        let attempts = 0;
-        const maxAttempts = 5;
-        const blurLevels = ["20px", "12px", "6px", "2px", "0px"];
-
-        document.getElementById("movie-img").src = currentMovie.image;
-        updateClues();
-
-        function updateClues() {
-            document.getElementById("clue-genre").innerText = attempts >= 1 ? currentMovie.genre : "🔒 Débloqué au 1er essai";
-            document.getElementById("clue-year").innerText = attempts >= 2 ? currentMovie.year : "🔒 Débloqué au 2e essai";
-            document.getElementById("clue-quote").innerText = attempts >= 2 ? currentMovie.quote : "🔒 Indice réplique au 2e essai";
-        }
-
-        // SYSTÈME DE SONS (Générés par le navigateur, sans fichier externe)
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        function playSound(type) {
-            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            if (type === 'win') {
-                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(554.37, audioCtx.currentTime + 0.1);
-                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.5);
-            } else if (type === 'wrong') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-                osc.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.3);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.3);
-            }
-        }
-
-        function makeGuess() {
-            const input = document.getElementById("user-guess");
-            const userVal = input.value.trim().toLowerCase();
-            const msgBox = document.getElementById("message-box");
-
-            if (!userVal) return;
-
-            const isCorrect = userVal === currentMovie.title.toLowerCase();
-            
-            const dots = document.querySelectorAll(".guess-dot");
-            dots[attempts].innerText = userVal.substring(0,1).toUpperCase();
-            dots[attempts].classList.add(isCorrect ? "correct" : "wrong");
-
-            attempts++;
-
-            if (isCorrect) {
-                playSound('win');
-                document.getElementById("movie-img").style.filter = "blur(0px)";
-                msgBox.innerHTML = `<span style="color: var(--green);">🎉 Bravo ! C'était bien ${currentMovie.title} !</span><br><br>` +
-                                   `<button class="action-btn" onclick="shareScore()">📤 Partager mon score</button>`;
-                document.getElementById("game-controls").style.display = "none";
-            } else if (attempts >= maxAttempts) {
-                playSound('wrong');
-                document.getElementById("movie-img").style.filter = "blur(0px)";
-                msgBox.innerHTML = `<span style="color: var(--red);">Perdu ! C'était : ${currentMovie.title}</span>`;
-                document.getElementById("game-controls").style.display = "none";
-            } else {
-                playSound('wrong');
-                document.getElementById("movie-img").style.filter = `blur(${blurLevels[attempts]})`;
-                msgBox.innerText = `❌ Ce n'est pas ça ! Encore ${maxAttempts - attempts} essais.`;
-                updateClues();
-                input.value = "";
-            }
-        }
-
-        function handleKeyPress(e) {
-            if (e.key === "Enter") makeGuess();
-        }
-
-        function shareScore() {
-            const scoreText = `🎬 CinéQuiz | Trouvé en ${attempts}/5 essais ! 🍿`;
-            navigator.clipboard.writeText(scoreText);
-            alert("Score copié dans le presse-papier ! Tu peux le coller sur WhatsApp ou tes réseaux.");
-        }
-
-        function switchTab(tabName) {
-            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
-            document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
-
-            if (tabName === 'game') {
-                document.querySelectorAll(".tab-btn")[0].classList.add("active");
-                document.getElementById("game-section").classList.add("active");
-            } else {
-                document.querySelectorAll(".tab-btn")[1].classList.add("active");
-                document.getElementById("shop-section").classList.add("active");
-            }
-        }
-    </script>
-</body>
-</html>
+                <a href="https://www.amazon.fr/s?k=coffret+bluray+collector" target
