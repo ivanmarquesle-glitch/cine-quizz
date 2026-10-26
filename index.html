@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CinéQuiz - Le Jeu du Film Quotidien</title>
-    <!-- Style épuré et moderne en mode sombre -->
     <style>
         :root {
             --bg-color: #0f172a;
@@ -114,10 +113,11 @@
             border-radius: 8px;
             margin-bottom: 15px;
             font-size: 0.9rem;
+            border-left: 4px solid var(--accent-color);
         }
 
         .clues-box p {
-            margin-bottom: 5px;
+            margin-bottom: 6px;
         }
 
         .input-group {
@@ -228,7 +228,6 @@
         <!-- SECTION 1 : JEU DU JOUR -->
         <div id="game-section" class="section active">
             <div class="game-image-container">
-                <!-- Image avec effet de flou dynamique -->
                 <img id="movie-img" src="" alt="Film mystère" style="filter: blur(25px);">
             </div>
 
@@ -241,8 +240,9 @@
             </div>
 
             <div class="clues-box" id="clues-box">
-                <p><strong>Indice 1 (Genre) :</strong> <span id="clue-genre">...</span></p>
-                <p><strong>Indice 2 (Année) :</strong> <span id="clue-year">...</span></p>
+                <p><strong>🎭 Indice 1 (Genre) :</strong> <span id="clue-genre">...</span></p>
+                <p><strong>📅 Indice 2 (Année) :</strong> <span id="clue-year">...</span></p>
+                <p><strong>💬 Indice 3 (Réplique culte) :</strong> <span id="clue-quote">...</span></p>
             </div>
 
             <div id="game-controls">
@@ -264,8 +264,7 @@
                     <h4>Affiche Minimaliste Culte</h4>
                     <p>Posters de films haute qualité</p>
                 </div>
-                <!-- ICI : Remplace le lien '#' par ton lien affilié Amazon / Partenaire -->
-                <a href="#" target="_blank" class="aff-btn">Voir</a>
+                <a href="https://www.amazon.fr/s?k=affiche+film+culte" target="_blank" class="aff-btn">Voir</a>
             </div>
 
             <div class="shop-item">
@@ -273,8 +272,7 @@
                     <h4>Coffret Blu-ray Collector</h4>
                     <p>Éditions limitées et steelbooks</p>
                 </div>
-                <!-- ICI : Remplace le lien '#' par ton lien affilié -->
-                <a href="#" target="_blank" class="aff-btn">Voir</a>
+                <a href="https://www.amazon.fr/s?k=coffret+bluray+collector" target="_blank" class="aff-btn">Voir</a>
             </div>
 
             <div class="shop-item">
@@ -282,40 +280,67 @@
                     <h4>Barre de Son Home-Cinéma</h4>
                     <p>Pour une immersion totale</p>
                 </div>
-                <!-- ICI : Remplace le lien '#' par ton lien affilié -->
-                <a href="#" target="_blank" class="aff-btn">Voir</a>
+                <a href="https://www.amazon.fr/s?k=barre+de+son+home+cinema" target="_blank" class="aff-btn">Voir</a>
             </div>
         </div>
     </div>
 
     <script>
-        // BASE DE DONNÉES DES FILMS (Tu peux en ajouter autant que tu veux !)
+        // BASE DE DONNÉES DES FILMS AVEC RÉPLIQUES CULTES
         const MOVIE_DATABASE = [
-            { title: "Jurassic Park", genre: "Science-Fiction / Aventure", year: "1993", image: "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=600" },
-            { title: "Inception", genre: "Thriller / Sci-Fi", year: "2010", image: "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=600" },
-            { title: "Le Seigneur des Anneaux", genre: "Fantasy / Aventure", year: "2001", image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=600" },
-            { title: "Interstellar", genre: "Sci-Fi / Drame", year: "2014", image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600" },
-            { title: "Matrix", genre: "Action / Sci-Fi", year: "1999", image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=600" }
+            { title: "Jurassic Park", genre: "Science-Fiction / Aventure", year: "1993", quote: "« La vie, euh... trouve toujours un chemin. »", image: "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=600" },
+            { title: "Inception", genre: "Thriller / Sci-Fi", year: "2010", quote: "« On doit aller plus profond. »", image: "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=600" },
+            { title: "Le Seigneur des Anneaux", genre: "Fantasy / Aventure", year: "2001", quote: "« Un anneau pour les gouverner tous. »", image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=600" },
+            { title: "Interstellar", genre: "Sci-Fi / Drame", year: "2014", quote: "« Nous nous retrouverons peut-être, ou peut-être pas. »", image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600" },
+            { title: "Matrix", genre: "Action / Sci-Fi", year: "1999", quote: "« Tu prends la pilule bleue, l'histoire s'arrête là... »", image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=600" }
         ];
 
-        // Sélection automatique du film du jour selon la date
+        // Sélection automatique du film du jour
         const startDate = new Date("2026-01-01").getTime();
         const today = new Date().setHours(0,0,0,0);
         const dayIndex = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
         const currentMovie = MOVIE_DATABASE[dayIndex % MOVIE_DATABASE.length];
 
-        // État du jeu
         let attempts = 0;
         const maxAttempts = 5;
         const blurLevels = ["20px", "12px", "6px", "2px", "0px"];
 
-        // Initialisation de l'affichage
         document.getElementById("movie-img").src = currentMovie.image;
         updateClues();
 
         function updateClues() {
-            document.getElementById("clue-genre").innerText = attempts >= 1 ? currentMovie.genre : "🔒 Trouvable après le 1er essai";
-            document.getElementById("clue-year").innerText = attempts >= 2 ? currentMovie.year : "🔒 Trouvable après le 2e essai";
+            document.getElementById("clue-genre").innerText = attempts >= 1 ? currentMovie.genre : "🔒 Débloqué au 1er essai";
+            document.getElementById("clue-year").innerText = attempts >= 2 ? currentMovie.year : "🔒 Débloqué au 2e essai";
+            document.getElementById("clue-quote").innerText = attempts >= 2 ? currentMovie.quote : "🔒 Indice réplique au 2e essai";
+        }
+
+        // SYSTÈME DE SONS (Générés par le navigateur, sans fichier externe)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'win') {
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(554.37, audioCtx.currentTime + 0.1);
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
         }
 
         function makeGuess() {
@@ -327,7 +352,6 @@
 
             const isCorrect = userVal === currentMovie.title.toLowerCase();
             
-            // Mettre à jour les pastilles d'essai
             const dots = document.querySelectorAll(".guess-dot");
             dots[attempts].innerText = userVal.substring(0,1).toUpperCase();
             dots[attempts].classList.add(isCorrect ? "correct" : "wrong");
@@ -335,16 +359,18 @@
             attempts++;
 
             if (isCorrect) {
+                playSound('win');
                 document.getElementById("movie-img").style.filter = "blur(0px)";
                 msgBox.innerHTML = `<span style="color: var(--green);">🎉 Bravo ! C'était bien ${currentMovie.title} !</span><br><br>` +
                                    `<button class="action-btn" onclick="shareScore()">📤 Partager mon score</button>`;
                 document.getElementById("game-controls").style.display = "none";
             } else if (attempts >= maxAttempts) {
+                playSound('wrong');
                 document.getElementById("movie-img").style.filter = "blur(0px)";
                 msgBox.innerHTML = `<span style="color: var(--red);">Perdu ! C'était : ${currentMovie.title}</span>`;
                 document.getElementById("game-controls").style.display = "none";
             } else {
-                // Diminuer le flou
+                playSound('wrong');
                 document.getElementById("movie-img").style.filter = `blur(${blurLevels[attempts]})`;
                 msgBox.innerText = `❌ Ce n'est pas ça ! Encore ${maxAttempts - attempts} essais.`;
                 updateClues();
@@ -362,7 +388,6 @@
             alert("Score copié dans le presse-papier ! Tu peux le coller sur WhatsApp ou tes réseaux.");
         }
 
-        // Navigation entre les onglets
         function switchTab(tabName) {
             document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
             document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
